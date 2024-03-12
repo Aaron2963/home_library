@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "vue-router";
+import { getAuth } from "firebase/auth";
 import Book from "@/types/Book";
 
 const firebaseConfig = {
@@ -17,15 +16,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-const router = useRouter();
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    router.push("/login");
-  } else {
-    console.log('userid: ', user.uid);
-  }
-})
 
 async function getBook(isbn) {
   const d = doc(db, "books", isbn);

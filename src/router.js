@@ -15,7 +15,7 @@ const routes = [
   },
   {
     path: "/shelf/:id",
-    component: () => import('@/views/ShelfListView.vue'),
+    component: () => import('@/views/ShelfView.vue'),
     props: true,
   },
   {
