@@ -3,25 +3,28 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
+    component: () => import('@/views/HomeView.vue'),
+  },
+  {
+    path: "/login",
+    component: () => import('@/views/LoginView.vue'),
+  },
+  {
+    path: "/shelves",
+    component: () => import('@/views/ShelfListView.vue'),
+  },
+  {
+    path: "/shelf/:id",
+    component: () => import('@/views/ShelfListView.vue'),
+    props: true,
+  },
+  {
+    path: "/books",
     component: () => import('@/views/BookListView.vue'),
-  },
-  {
-    path: "/book/:id",
-    component: () => import('@/views/BookDetailView.vue'),
-    props: true,
-  },
-  {
-    path: "/book-edit/:id",
-    component: () => import('@/views/BookFormView.vue'),
-    props: true,
   },
   {
     path: "/add",
     component: () => import('@/views/AddBookView.vue'),
-  },
-  {
-    path: "/about",
-    component: () => import('@/views/AboutView.vue'),
   },
 ];
 

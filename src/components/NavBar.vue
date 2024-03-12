@@ -1,36 +1,26 @@
 <template>
   <nav class="navbar navbar-expand-sm navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand" href="#">Navbar</a>
-      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
-        data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
-        aria-label="Toggle navigation">
+      <router-link class="navbar-brand" to="/">
+        <img :src="logo" alt="Home Library" />
+        <span class="ms-2">我的圖書館</span>
+      </router-link>
+      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-nav"
+        aria-controls="collapse-nav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavId">
+      <div class="collapse navbar-collapse" id="collapse-nav">
         <ul class="navbar-nav me-auto mt-2 mt-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" href="#" aria-current="page">Home
-              <span class="visually-hidden">(current)</span></a>
+            <router-link class="nav-link active" to="/shelves" aria-current="page">書庫</router-link>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
+            <router-link class="nav-link" to="/books">書目</router-link>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-bs-toggle="dropdown" aria-haspopup="true"
-              aria-expanded="false">Dropdown</a>
-            <div class="dropdown-menu" aria-labelledby="dropdownId">
-              <a class="dropdown-item" href="#">Action 1</a>
-              <a class="dropdown-item" href="#">Action 2</a>
-            </div>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/login" @click="logout">登出</router-link>
           </li>
         </ul>
-        <form class="d-flex my-2 my-lg-0">
-          <input class="form-control me-sm-2" type="text" placeholder="Search" />
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
-            Search
-          </button>
-        </form>
       </div>
     </div>
   </nav>
@@ -38,7 +28,18 @@
 </template>
 
 <script setup>
-
+import { auth } from '@/utils/db'
+import { useRouter } from 'vue-router'
+import logo from '@/assets/logo.png'
+const router = useRouter()
+function logout() {
+  auth.signOut()
+  router.push('/login')
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+.navbar-brand img {
+  height: 2rem;
+}
+</style>

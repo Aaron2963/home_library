@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Edit Book</h1>
+    Shelves
   </div>
 </template>
 
@@ -8,6 +8,4 @@
 
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
