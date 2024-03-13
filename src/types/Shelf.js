@@ -37,4 +37,14 @@ export default class Shelf {
     }
     return books;
   }
+
+  toJson() {
+    return {
+      id: this.id,
+      name: this.name,
+      createdAt: this.createdAt,
+      modifiedAt: this.modifiedAt,
+      books: this.books,
+    };
+  }
 }

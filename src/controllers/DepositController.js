@@ -1,5 +1,5 @@
 import { db, auth } from "@/utils/db.js";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore/lite";
+import { collection, getDocs, getDoc, doc, setDoc, updateDoc } from "firebase/firestore/lite";
 import Shelf from "@/types/Shelf";
 
 export default class DepositController {
@@ -23,5 +23,12 @@ export default class DepositController {
       throw new Error(`No such document: deposit/${uid}/shelves/${id}`);
     }
     return Shelf.fromJson(shelf.data());
+  }
+
+  static async updateShelf(id, data) {
+    const uid = auth.currentUser.uid;
+    const dc = doc(db, `deposit/${uid}/shelves`, id);
+    await updateDoc(dc, data);
+    return true;
   }
 }

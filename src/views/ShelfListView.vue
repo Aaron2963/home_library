@@ -6,12 +6,7 @@
         <router-link :to="`/shelf/${s.id}`">
           <div class="card">
             <div class="card-body">
-              <h4 class="card-title">
-                <span>{{ s.name }}</span>
-                <button class="btn btn-outline-dark btn-sm">
-                  <img :src="iconEdit">
-                </button>
-              </h4>
+              <h4 class="card-title">{{ s.name }}</h4>
               <div class="text-muted">修改於{{ s.modifyDate }}</div>
             </div>
           </div>
@@ -24,22 +19,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import DepositController from '@/controllers/DepositController';
-import iconEdit from '@/assets/edit_note.svg'
 
 const shelves = ref([])
 onMounted(async () => {
   shelves.value = await DepositController.getShelves()
 })
 </script>
-
-<style scoped>
-.card-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.btn:hover img {
-  filter: invert(1);
-}
-</style>

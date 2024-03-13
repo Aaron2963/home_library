@@ -2,3 +2,11 @@ a {
   color: var(--bs-body-color);
   text-decoration: none;
 }
+
+.btn.btn-light {
+  box-shadow: 0.05rem 0.05rem 0 0.05rem rgba(0, 0, 0, 0.1);
+}
+
+.btn.btn-danger>img {
+  filter: brightness(0) invert(1);
+}
