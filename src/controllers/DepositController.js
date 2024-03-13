@@ -11,6 +11,7 @@ export default class DepositController {
     snapshot.forEach((doc) => {
       shelves.push(Shelf.fromJson(doc.data()));
     });
+    shelves.sort((a, b) => b.modifiedAt - a.modifiedAt);
     return shelves;
   }
 

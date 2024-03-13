@@ -28,13 +28,13 @@ export default class Shelf {
 
   async getPayload() {
     const books = [];
-      for (const isbn in this.books) {
-        const book = await CatalogController.get(isbn);
-        books.push({
-          ...book.toJson(),
-          quantity: this.books[isbn],
-        });
-      }
-      return books;
+    for (const isbn in this.books) {
+      const book = await CatalogController.get(isbn);
+      books.push({
+        ...book.toJson(),
+        quantity: this.books[isbn],
+      });
+    }
+    return books;
   }
 }

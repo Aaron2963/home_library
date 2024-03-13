@@ -12,7 +12,7 @@
       <div class="collapse navbar-collapse" id="collapse-nav">
         <ul class="navbar-nav me-auto mt-2 mt-lg-0">
           <li class="nav-item">
-            <router-link class="nav-link active" to="/shelves" aria-current="page">書庫</router-link>
+            <router-link class="nav-link active" to="/shelves" aria-current="page">書櫃列表</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link" to="/books">書目</router-link>
