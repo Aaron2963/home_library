@@ -9,33 +9,37 @@ import {
   orderBy,
   startAfter,
   getCountFromServer,
+  where,
 } from "firebase/firestore";
 import Book from "@/types/Book";
 
 export default class CatalogController {
-  static lastOfList = null;
-
-  static async list(startOver = false) {
-    // TODO: query where
-    const last = startOver ? null : CatalogController.lastOfList;
-    const q = query(
-      collection(db, `books`),
-      orderBy(`title`),
-      limit(10),
-      startAfter(last)
-    );
+  static async list(last, by = "title", condition = null) {
+    const lim = 1,
+      coll = collection(db, `books`);
+    let q = null,
+      cq = null;
+    if (condition) {
+      let wh = where(by, ">=", condition);
+      if (["isbn10", "isbn13"].includes(by)) {
+        wh = where(by, "==", condition);
+      }
+      q = query(coll, wh, orderBy(by), limit(lim), startAfter(last));
+      cq = query(coll, wh);
+    } else {
+      q = query(coll, orderBy(by), limit(lim), startAfter(last));
+      cq = query(coll);
+    }
     const books = [];
+    const countSnapshot = await getCountFromServer(cq);
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       books.push(Book.fromJson(doc.data()));
     });
-    CatalogController.lastOfList = querySnapshot.docs[querySnapshot.docs.length - 1];
-    return books;
-  }
-
-  static async count() {
-    const snapshot = await getCountFromServer(collection(db, `books`));
-    return snapshot.data().count;
+    return {
+      total: countSnapshot.data().count,
+      data: books,
+    };
   }
 
   static async get(isbn) {

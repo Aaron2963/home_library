@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { auth } from '@/utils/db'
 
 const routes = [
   {
@@ -49,13 +48,6 @@ let title = '我的圖書館';
 const router = createRouter({
   history: createWebHistory(),
   routes: routes,
-});
-router.beforeEach((to, from, next) => {
-  if (to.meta.needAuth && !auth.currentUser) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
 });
 
 router.afterEach((to) => {
