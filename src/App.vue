@@ -1,7 +1,7 @@
 <template>
   <div id="app-root">
-    <nav-bar />
-    <div id="content" v-if="loggedIn">
+    <nav-bar :key="loggedIn" />
+    <div id="content" v-if="showContent">
       <router-view />
     </div>
   </div>
@@ -11,13 +11,15 @@
 import NavBar from '@/components/NavBar.vue'
 import { auth } from '@/utils/db';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { ref, computed } from 'vue';
 
 const loggedIn = ref(false);
-const router = useRouter();
+const router = useRouter(), route = useRoute();
+const showContent = computed(() => ['login','home'].includes(route.name) || loggedIn.value);
 onAuthStateChanged(auth, (user) => {
   if (!user) {
+    loggedIn.value = false;
     router.push("/login");
   } else {
     loggedIn.value = true;

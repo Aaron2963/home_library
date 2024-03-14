@@ -10,3 +10,7 @@ a {
 .btn.btn-danger>img {
   filter: brightness(0) invert(1);
 }
+
+.row {
+  --bs-gutter-y: 1.5rem;
+}

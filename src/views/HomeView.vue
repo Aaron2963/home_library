@@ -26,7 +26,7 @@ function go () {
 
 <style scoped>
 .root {
-  background-image: url('./home.jpg');
+  background-image: url('@/assets/home.jpg');
   background-position: bottom;
   background-size: cover;
   width: 100%;

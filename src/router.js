@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { auth } from '@/utils/db'
 
 const routes = [
   {
     path: "/",
     component: () => import('@/views/HomeView.vue'),
+    name: 'home',
     meta: {
       title: '首頁',
     },
@@ -11,6 +13,7 @@ const routes = [
   {
     path: "/login",
     component: () => import('@/views/LoginView.vue'),
+    name: 'login',
     meta: {
       title: '登入',
     },
@@ -20,6 +23,7 @@ const routes = [
     component: () => import('@/views/ShelfListView.vue'),
     meta: {
       title: '書櫃列表',
+      needAuth: true,
     },
   },
   {
@@ -28,6 +32,7 @@ const routes = [
     props: true,
     meta: {
       title: '書櫃',
+      needAuth: true,
     },
   },
   {
@@ -35,11 +40,8 @@ const routes = [
     component: () => import('@/views/BookListView.vue'),
     meta: {
       title: '書目',
+      needAuth: true,
     },
-  },
-  {
-    path: "/add",
-    component: () => import('@/views/AddBookView.vue'),
   },
 ];
 
@@ -48,6 +50,14 @@ const router = createRouter({
   history: createWebHistory(),
   routes: routes,
 });
+router.beforeEach((to, from, next) => {
+  if (to.meta.needAuth && !auth.currentUser) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
+});
+
 router.afterEach((to) => {
   if (to.meta.title) {
     title = [to.meta.title, '我的圖書館'].join(' - ');

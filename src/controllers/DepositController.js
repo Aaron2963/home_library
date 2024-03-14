@@ -1,5 +1,5 @@
 import { db, auth } from "@/utils/db.js";
-import { collection, getDocs, getDoc, doc, setDoc, updateDoc } from "firebase/firestore/lite";
+import { collection, getDocs, getDoc, doc, updateDoc } from "firebase/firestore";
 import Shelf from "@/types/Shelf";
 
 export default class DepositController {

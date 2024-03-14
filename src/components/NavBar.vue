@@ -17,7 +17,7 @@
           <li class="nav-item">
             <router-link class="nav-link" to="/books">書目</router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="auth.currentUser">
             <router-link class="nav-link" to="/login" @click="logout">登出</router-link>
           </li>
         </ul>

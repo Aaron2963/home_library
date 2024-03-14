@@ -105,7 +105,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap';
-import { Timestamp } from 'firebase/firestore/lite';
+import { Timestamp } from 'firebase/firestore';
 import DepositController from '@/controllers/DepositController';
 import Swal from 'sweetalert2';
 import BreadCrumb from '@/components/BreadCrumb.vue';
