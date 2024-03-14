@@ -1,1 +1,0 @@
-import{_ as e,c as o,o as t,a as c}from"./index-CINRVZQv.js";const s={},n=c("h1",null,"Edit Book",-1),r=[n];function _(a,d){return t(),o("div",null,r)}const l=e(s,[["render",_]]);export{l as default};
