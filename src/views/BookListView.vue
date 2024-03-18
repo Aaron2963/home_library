@@ -3,21 +3,26 @@
     <h1 class="mb-3">
       <span>書目</span>
     </h1>
-    <div class="search">
-      <div class="input-group">
-        <select class="form-select" v-model="searchKey">
-          <option value="title">書名</option>
-          <option value="author">作者</option>
-          <option value="publisher">出版社</option>
-          <option value="isbn10">ISBN-10</option>
-          <option value="isbn13">ISBN-13</option>
-        </select>
-        <input type="text" class="form-control" v-model="searchValue" placeholder="搜尋" />
-        <button class="btn btn-primary" @click="reset">
-          <img :src="iconSearch" alt="搜尋" />
-        </button>
+    <div class="action-bar">
+      <div class="search">
+        <div class="input-group">
+          <select class="form-select" v-model="searchKey">
+            <option value="title">書名</option>
+            <option value="author">作者</option>
+            <option value="publisher">出版社</option>
+            <option value="isbn10">ISBN-10</option>
+            <option value="isbn13">ISBN-13</option>
+          </select>
+          <input type="text" class="form-control" v-model="searchValue" placeholder="搜尋" />
+          <button class="btn btn-primary" @click="reset">
+            <img :src="iconSearch" alt="搜尋" />
+          </button>
+        </div>
+        <small v-if="searchKey.substring(0, 4) === 'isbn'" class="input-help">搜尋 ISBN 時僅限完全符合</small>
       </div>
-      <small v-if="searchKey.substring(0, 4) === 'isbn'" class="input-help">搜尋 ISBN 時僅限完全符合</small>
+      <button class="btn btn-success" @click="addBook">
+        <img :src="iconAdd" />
+      </button>
     </div>
     <div class="row">
       <div class="col-12 col-lg-4" v-for="(b, i) in books" :key="i">
@@ -29,6 +34,9 @@
               <div class="text-muted">出版: {{ b.publisher }}</div>
               <div class="text-muted">ISBN: {{ b.isbnString }}</div>
               <div class="text-muted">{{ b.note }}</div>
+              <div class="actions">
+                <button class="btn btn-danger" @click.stop="removeBook(b.id)">刪除</button>
+              </div>
             </div>
           </div>
         </a>
@@ -96,17 +104,20 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import CatalogController from '@/controllers/CatalogController'
+import Swal from 'sweetalert2'
+import Book from '@/types/Book'
 import iconSearch from '@/assets/search.svg'
+import iconAdd from '@/assets/add.svg'
 
 const books = ref([]), total = ref(null), searchKey = ref('title'), searchValue = ref(null), book = ref({})
 const modalEditEl = ref(null), btnSubmit = ref(null)
 let last = null, modalEdit = null
 
-function reset() {
+async function reset() {
   last = null
   books.value = []
   total.value = null
-  loadBooks()
+  await loadBooks()
 }
 
 async function loadBooks() {
@@ -121,6 +132,34 @@ async function loadBooks() {
 function editBook(id) {
   book.value = books.value.find(b => b.id === id).copy()
   modalEdit.show()
+}
+
+async function addBook() {
+  const b = new Book()
+  const id = await CatalogController.create(b)
+  b.id = id
+  books.value.unshift(b)
+  book.value = b.copy()
+  modalEdit.show()
+}
+
+async function removeBook(id) {
+  const confirm = await Swal.fire({
+    title: '確定刪除？',
+    text: '刪除後無法復原',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: '確定',
+    cancelButtonText: '取消'
+  })
+  if (confirm.isConfirmed) {
+    try {
+      await CatalogController.remove(id)
+      books.value = books.value.filter(b => b.id !== id)
+    } catch (error) {
+      console.error('刪除失敗', error)
+    }
+  }
 }
 
 async function updateCatalog(ev) {
@@ -146,10 +185,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search {
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 20px;
+}
+
+.search {
   max-width: 500px;
-  margin-left: auto;
 }
 
 .search .input-group .form-control {
@@ -169,5 +214,11 @@ onMounted(() => {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+}
+
+.card-body .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 </style>

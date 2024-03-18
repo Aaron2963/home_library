@@ -3,6 +3,8 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  addDoc,
+  deleteDoc,
   doc,
   collection,
   query,
@@ -58,8 +60,8 @@ export default class CatalogController {
     }
     const q = query(
       collection(db, `books`),
-      where(`isbn${isbn.length}`, "==", isbn),
-    )
+      where(`isbn${isbn.length}`, "==", isbn)
+    );
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
       throw new Error(`No such document: books/${isbn}`);
@@ -71,6 +73,18 @@ export default class CatalogController {
   static async update(id, data) {
     const dc = doc(db, `books`, id);
     await updateDoc(dc, data);
+    return true;
+  }
+
+  static async create(book) {
+    const dc = await addDoc(collection(db, `books`), book.toJson());
+    await CatalogController.update(dc.id, { id: dc.id });
+    return dc.id;
+  }
+
+  static async remove(id) {
+    const dc = doc(db, `books`, id);
+    await deleteDoc(dc);
     return true;
   }
 }

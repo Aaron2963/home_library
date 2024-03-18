@@ -8,10 +8,15 @@ a {
 }
 
 .btn.btn-danger>img,
-.btn.btn-primary>img {
+.btn.btn-primary>img,
+.btn.btn-success>img {
   filter: brightness(0) invert(1);
 }
 
 .row {
   --bs-gutter-y: 1.5rem;
+}
+
+h1 {
+  text-align: center;
 }
