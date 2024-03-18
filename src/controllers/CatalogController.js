@@ -2,6 +2,7 @@ import { db } from "@/utils/db.js";
 import {
   getDoc,
   getDocs,
+  updateDoc,
   doc,
   collection,
   query,
@@ -15,7 +16,7 @@ import Book from "@/types/Book";
 
 export default class CatalogController {
   static async list(last, by = "title", condition = null) {
-    const lim = 1,
+    const lim = 10,
       coll = collection(db, `books`);
     let q = null,
       cq = null;
@@ -42,12 +43,34 @@ export default class CatalogController {
     };
   }
 
-  static async get(isbn) {
-    const dc = doc(db, `books`, isbn);
+  static async get(id) {
+    const dc = doc(db, `books`, id);
     const book = await getDoc(dc);
     if (!book.exists()) {
-      throw new Error(`No such document: books/${isbn}`);
+      throw new Error(`No such document: books/${id}`);
     }
     return Book.fromJson(book.data());
+  }
+
+  static async getByISBN(isbn) {
+    if (isbn.length !== 10 && isbn.length !== 13) {
+      throw new Error(`Invalid ISBN: ${isbn}`);
+    }
+    const q = query(
+      collection(db, `books`),
+      where(`isbn${isbn.length}`, "==", isbn),
+    )
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      throw new Error(`No such document: books/${isbn}`);
+    }
+    const book = querySnapshot.docs[0];
+    return Book.fromJson(book.data());
+  }
+
+  static async update(id, data) {
+    const dc = doc(db, `books`, id);
+    await updateDoc(dc, data);
+    return true;
   }
 }

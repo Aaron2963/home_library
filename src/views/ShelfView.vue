@@ -31,7 +31,7 @@
           </td>
           <td>{{ b.author }}</td>
           <td>{{ b.publisher }}</td>
-          <td>{{ b.isbn13 ?? b.isbn10 }}</td>
+          <td>{{ b.isbnString }}</td>
           <td class="number">{{ b.quantity }}</td>
           <td>
             <button class="btn btn-danger btn-sm" @click="remove(b.id)">
@@ -48,7 +48,7 @@
             <h4 class="card-title">{{ b.title }}</h4>
             <div class="text-muted">作者: {{ b.author }}</div>
             <div class="text-muted">出版: {{ b.publisher }}</div>
-            <div class="text-muted">ISBN: {{ b.isbn13 ?? b.isbn10 }}</div>
+            <div class="text-muted">ISBN: {{ b.isbnString }}</div>
             <div class="text-muted">{{ b.note }}</div>
             <h5 class="text-end">{{ b.quantity }}本</h5>
           </div>

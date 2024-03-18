@@ -1,5 +1,6 @@
 import { toDate } from "@/utils/date-function";
 import CatalogController from "@/controllers/CatalogController";
+import StockBook from "./StockBook";
 
 export default class Shelf {
   id = "";
@@ -28,12 +29,9 @@ export default class Shelf {
 
   async getPayload() {
     const books = [];
-    for (const isbn in this.books) {
-      const book = await CatalogController.get(isbn);
-      books.push({
-        ...book.toJson(),
-        quantity: this.books[isbn],
-      });
+    for (const id in this.books) {
+      const book = await CatalogController.get(id);
+      books.push(StockBook.fromBook(book, this.books[id]));
     }
     return books;
   }

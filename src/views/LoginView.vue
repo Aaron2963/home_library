@@ -31,8 +31,6 @@ async function submit(ev) {
   const password = form.get('password')
   try {
     await signInWithEmailAndPassword(auth, username, password)
-    console.log('登入成功')
-    console.log(auth.currentUser)
     router.push('/shelves')
   } catch (error) {
     console.error('登入失敗', error)

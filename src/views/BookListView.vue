@@ -1,6 +1,8 @@
 <template>
   <div class="container my-3">
-    <h1 class="mb-3">書目</h1>
+    <h1 class="mb-3">
+      <span>書目</span>
+    </h1>
     <div class="search">
       <div class="input-group">
         <select class="form-select" v-model="searchKey">
@@ -15,19 +17,21 @@
           <img :src="iconSearch" alt="搜尋" />
         </button>
       </div>
-      <small v-if="searchKey.substring(0,4) === 'isbn'" class="input-help">搜尋 ISBN 時僅限完全符合</small>
+      <small v-if="searchKey.substring(0, 4) === 'isbn'" class="input-help">搜尋 ISBN 時僅限完全符合</small>
     </div>
-    <div class="row" @scroll="onScroll">
-      <div class="col-12" v-for="(b, i) in books" :key="i">
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title">{{ b.title }}</h4>
-            <div class="text-muted">作者: {{ b.author }}</div>
-            <div class="text-muted">出版: {{ b.publisher }}</div>
-            <div class="text-muted">ISBN: {{ b.isbn13 ?? b.isbn10 }}</div>
-            <div class="text-muted">{{ b.note }}</div>
+    <div class="row">
+      <div class="col-12 col-lg-4" v-for="(b, i) in books" :key="i">
+        <a href="#" @click.prevent="editBook(b.id)">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">{{ b.title }}</h4>
+              <div class="text-muted">作者: {{ b.author }}</div>
+              <div class="text-muted">出版: {{ b.publisher }}</div>
+              <div class="text-muted">ISBN: {{ b.isbnString }}</div>
+              <div class="text-muted">{{ b.note }}</div>
+            </div>
           </div>
-        </div>
+        </a>
       </div>
     </div>
     <div class="text-center my-3">
@@ -36,16 +40,67 @@
     <div class="no-data" v-if="total == 0">
       <h3 class="text-center text-muted mt-5">查無相關書目</h3>
     </div>
+    <div ref="modalEditEl" class="modal fade" id="modal-edit" tabindex="-1" data-bs-backdrop="static"
+      data-bs-keyboard="false" role="dialog" aria-labelledby="modal-edit-title" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal-edit-title">修改書目資料</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateCatalog">
+              <input type="hidden" name="id" :value="book.id">
+              <div class="mb-3">
+                <label for="title" class="form-label">書名</label>
+                <input type="text" class="form-control" name="title" id="title" v-model="book.title" required />
+              </div>
+              <div class="mb-3">
+                <label for="author" class="form-label">作者</label>
+                <input type="text" class="form-control" name="author" id="author" v-model="book.author" />
+              </div>
+              <div class="mb-3">
+                <label for="publisher" class="form-label">出版社</label>
+                <input type="text" class="form-control" name="publisher" id="publisher" v-model="book.publisher" />
+              </div>
+              <div class="mb-3">
+                <label for="publishedDate" class="form-label">出版日期</label>
+                <input type="date" class="form-control" name="publishedDate" id="publishedDate"
+                  v-model="book.publishedDateString" />
+              </div>
+              <div class="mb-3">
+                <label for="isbn10" class="form-label">ISBN-10</label>
+                <input type="text" class="form-control" name="isbn10" id="isbn10" v-model="book.isbn10" />
+              </div>
+              <div class="mb-3">
+                <label for="isbn13" class="form-label">ISBN-13</label>
+                <input type="text" class="form-control" name="isbn13" id="isbn13" v-model="book.isbn13" />
+              </div>
+              <div class="mb-3">
+                <label for="note" class="form-label">備註</label>
+                <input type="text" class="form-control" name="note" id="note" v-model="book.note" />
+              </div>
+              <div class="buttons">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button ref="btnSubmit" type="submit" class="btn btn-primary">儲存</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import CatalogController from '@/controllers/CatalogController';
+import { Modal } from 'bootstrap'
+import CatalogController from '@/controllers/CatalogController'
 import iconSearch from '@/assets/search.svg'
 
-const books = ref([]), total = ref(null), searchKey = ref('title'), searchValue = ref(null)
-let last = null
+const books = ref([]), total = ref(null), searchKey = ref('title'), searchValue = ref(null), book = ref({})
+const modalEditEl = ref(null), btnSubmit = ref(null)
+let last = null, modalEdit = null
 
 function reset() {
   last = null
@@ -63,7 +118,29 @@ async function loadBooks() {
   }
 }
 
+function editBook(id) {
+  book.value = books.value.find(b => b.id === id).copy()
+  modalEdit.show()
+}
+
+async function updateCatalog(ev) {
+  btnSubmit.value.disabled = true
+  const oriIndex = books.value.findIndex(b => b.id === book.value.id),
+    ori = books.value[oriIndex],
+    diffKeys = ori.diff(book.value),
+    data = Object.fromEntries(diffKeys.map(k => [k, book.value[k]]))
+  try {
+    await CatalogController.update(book.value.id, data)
+    books.value.splice(oriIndex, 1, book.value)
+    modalEdit.hide()
+  } catch (error) {
+    console.error('更新失敗', error)
+  }
+  btnSubmit.value.disabled = false
+}
+
 onMounted(() => {
+  modalEdit = new Modal(modalEditEl.value)
   reset()
 })
 </script>
@@ -86,5 +163,11 @@ onMounted(() => {
 
 .btn.w-100 {
   max-width: 500px;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 </style>
