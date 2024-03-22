@@ -18,7 +18,7 @@ import Book from "@/types/Book";
 
 export default class CatalogController {
   static async list(last, by = "title", condition = null) {
-    const lim = 10,
+    const lim = 12,
       coll = collection(db, `books`);
     let q = null,
       cq = null;
