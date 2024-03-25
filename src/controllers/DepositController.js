@@ -78,4 +78,14 @@ export default class DepositController {
     await updateDoc(doc(db, `deposit/${uid}/shelves`, id), data);
     return true;
   }
+
+  static async changeBookQuantity(id, bookId, quantity) {
+    const uid = auth.currentUser.uid;
+    const data = {
+      [`books.${bookId}`]: quantity,
+      modifiedAt: Timestamp.now(),
+    };
+    await updateDoc(doc(db, `deposit/${uid}/shelves`, id), data);
+    return true;
+  }
 }

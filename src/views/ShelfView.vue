@@ -1,7 +1,8 @@
 <template>
   <div class="container my-3">
-    <bread-crumb :parents="['/shelves']" current="書櫃" />
-    <h1 class="mb-3">書櫃【{{ shelf.name }}】</h1>
+    <bread-crumb :parents="['/shelves']" :current="`書櫃：${shelf.name}`" />
+    <h1 class="mb-3">{{ shelf.name }}</h1>
+    <h6 class="text-center">書櫃中有 {{ shelf.bookCount }} 本書</h6>
     <div class="actions">
       <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modal-edit-shelf">
         <img :src="iconEdit" alt="edit">
@@ -32,10 +33,20 @@
           <td>{{ b.author }}</td>
           <td>{{ b.publisher }}</td>
           <td>{{ b.isbnString }}</td>
-          <td class="number">{{ b.quantity }}</td>
+          <td>
+            <div class="number">
+              <button class="btn btn-primary btn-sm p-0" @click="changeQty(b.id, -1)">
+                <img :src="iconMinus" alt="minus" />
+              </button>
+              <span>{{ b.quantity }}</span>
+              <button class="btn btn-primary btn-sm p-0" @click="changeQty(b.id, 1)">
+                <img :src="iconAdd" alt="add" />
+              </button>
+            </div>
+          </td>
           <td>
             <button class="btn btn-danger btn-sm" @click="remove(b.id)">
-              <img :src="iconClose" alt="remove">
+              <img :src="iconClose" alt="remove" />
             </button>
           </td>
         </tr>
@@ -51,6 +62,17 @@
             <div class="text-muted">ISBN: {{ b.isbnString }}</div>
             <div class="text-muted">{{ b.note }}</div>
             <h5 class="text-end">{{ b.quantity }}本</h5>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-danger btn-sm" @click="remove(b.id)">
+              <img :src="iconClose" alt="remove" />
+            </button>
+            <button class="btn btn-primary btn-sm ms-auto" @click="changeQty(b.id, -1)">
+              <img :src="iconMinus" alt="minus" />
+            </button>
+            <button class="btn btn-primary btn-sm" @click="changeQty(b.id, 1)">
+              <img :src="iconAdd" alt="add" />
+            </button>
           </div>
         </div>
       </div>
@@ -86,15 +108,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="add">
-              <div class="mb-3">
-                <input type="text" class="form-control" name="isbn" placeholder="ISBN" />
+            <div class="mb-3">
+              <search-catalog ref="searchForm" @search="search" />
+              <div class="list-group list-group-flush my-3">
+                <a v-for="(b) in searchResult" :key="b.id" href="#" class="list-group-item list-group-item-action"
+                  @click.prevent="add(b)" data-bs-dismiss="modal">
+                  <b>{{ b.title }}</b>
+                  <span class="ms-2 text-secondary">{{ b.author }}</span>
+                </a>
               </div>
-              <div class="text-end mb-3">
-                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">取消</button>
-                <button type="submit" class="btn btn-primary">確定</button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
@@ -107,13 +130,18 @@ import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap';
 import { Timestamp } from 'firebase/firestore';
 import DepositController from '@/controllers/DepositController';
+import CatalogController from '@/controllers/CatalogController';
+import StockBook from '@/types/StockBook';
 import Swal from 'sweetalert2';
 import BreadCrumb from '@/components/BreadCrumb.vue';
+import SearchCatalog from '@/components/SearchCatalog.vue';
 import iconEdit from '@/assets/edit.svg';
 import iconAdd from '@/assets/add.svg';
 import iconClose from '@/assets/close.svg';
+import iconMinus from '@/assets/remove.svg';
 
 const shelf = ref({}), books = ref([]), modalEditShelfEl = ref(null);
+const searchResult = ref([]), searchForm = ref(null);
 let modalEditShelf = null;
 
 const props = defineProps({
@@ -144,12 +172,14 @@ async function editShelf(ev) {
 
 async function remove(id) {
   try {
-    const newBooks = shelf.value.books.filter(b => b.id !== id),
-      modifiedAt = Timestamp.now()
+    const modifiedAt = Timestamp.now()
+    for (const bid in shelf.value.books) {
+      if (id === bid) delete shelf.value.books[bid]
+    }
     await DepositController.updateShelf(shelf.value.id, {
-      newBooks, modifiedAt
+      modifiedAt,
+      books: shelf.value.books
     })
-    shelf.value.books = newBooks
     shelf.value.modifiedAt = modifiedAt
     books.value = await shelf.value.getPayload()
   } catch (error) {
@@ -157,8 +187,27 @@ async function remove(id) {
   }
 }
 
-async function add(ev) {
-  //TODO: Add book to shelf
+async function search(params) {
+  searchResult.value = (await CatalogController.list(null, params.key, params.value)).data
+}
+
+async function add(book) {
+  const sb = StockBook.fromBook(book, 1)
+  await DepositController.addBooks(shelf.value.id, [sb])
+  const idx = books.value.findIndex(b => b.id === book.id);
+  if (idx >= 0) {
+    sb.quantity += books.value[idx].quantity
+    books.value.splice(idx, 1)
+  }
+  books.value.unshift(sb)
+  searchForm.value.reset()
+  searchResult.value = []
+}
+
+async function changeQty(id, num) {
+  const book = books.value.find(b => b.id === id)
+  book.quantity += num
+  await DepositController.changeBookQuantity(shelf.value.id, id, book.quantity)
 }
 
 onMounted(async () => {
@@ -189,7 +238,21 @@ td {
   vertical-align: middle;
 }
 
-td.number {
-  text-align: right;
+td .number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+td .number span {
+  width: 2.5rem;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 </style>

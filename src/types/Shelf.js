@@ -35,6 +35,10 @@ export default class Shelf {
     this.modifiedAt = toTimestamp(value);
   }
 
+  get bookCount() {
+    return Object.values(this.books).reduce((acc, cur) => acc + cur, 0);
+  }
+
   async getPayload() {
     const books = [];
     for (const id in this.books) {

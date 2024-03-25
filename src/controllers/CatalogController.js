@@ -22,13 +22,29 @@ export default class CatalogController {
       coll = collection(db, `books`);
     let q = null,
       cq = null;
-    if (condition) {
-      let wh = where(by, ">=", condition);
-      if (["isbn10", "isbn13"].includes(by)) {
-        wh = where(by, "==", condition);
-      }
-      q = query(coll, wh, orderBy(by), limit(lim), startAfter(last));
-      cq = query(coll, wh);
+    if (condition && ["isbn10", "isbn13"].includes(by)) {
+      q = query(
+        coll,
+        where(by, "==", condition),
+        orderBy(by),
+        limit(lim),
+        startAfter(last)
+      );
+      cq = query(coll, where(by, "==", condition));
+    } else if (condition) {
+      q = query(
+        coll,
+        where(by, ">=", condition),
+        where(by, "<=", condition + "\uf8ff"),
+        orderBy(by),
+        limit(lim),
+        startAfter(last)
+      );
+      cq = query(
+        coll,
+        where(by, ">=", condition),
+        where(by, "<=", condition + "\uf8ff")
+      );
     } else {
       q = query(coll, orderBy(by), limit(lim), startAfter(last));
       cq = query(coll);

@@ -4,22 +4,7 @@
       <span>書目</span>
     </h1>
     <div class="action-bar">
-      <div class="search">
-        <div class="input-group">
-          <select class="form-select" v-model="searchKey">
-            <option value="title">書名</option>
-            <option value="author">作者</option>
-            <option value="publisher">出版社</option>
-            <option value="isbn10">ISBN-10</option>
-            <option value="isbn13">ISBN-13</option>
-          </select>
-          <input type="text" class="form-control" v-model="searchValue" placeholder="搜尋" />
-          <button class="btn btn-primary" @click="reset">
-            <img :src="iconSearch" alt="搜尋" />
-          </button>
-        </div>
-        <small v-if="searchKey.substring(0, 4) === 'isbn'" class="input-help">搜尋 ISBN 時僅限完全符合</small>
-      </div>
+      <search-catalog @search="reset" />
       <button class="btn btn-success" @click="addBook">
         <img :src="iconAdd" />
       </button>
@@ -104,28 +89,30 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import CatalogController from '@/controllers/CatalogController'
+import SearchCatalog from '../components/SearchCatalog.vue'
 import Swal from 'sweetalert2'
 import Book from '@/types/Book'
-import iconSearch from '@/assets/search.svg'
 import iconAdd from '@/assets/add.svg'
 
-const books = ref([]), total = ref(null), searchKey = ref('title'), searchValue = ref(null), book = ref({})
+const books = ref([]), total = ref(null), book = ref({})
 const modalEditEl = ref(null), btnSubmit = ref(null)
-let last = null, modalEdit = null
+let last, searchKey = 'title', searchValue, modalEdit
 
-async function reset() {
+async function reset(params) {
   last = null
   books.value = []
   total.value = null
+  searchKey = params?.key || 'title'
+  searchValue = params?.value || ''
   await loadBooks()
 }
 
 async function loadBooks() {
-  const { total: count, data } = await CatalogController.list(last, searchKey.value, searchValue.value)
+  const { total: count, data } = await CatalogController.list(last, searchKey, searchValue)
   total.value = count
   if (data.length > 0) {
     books.value.push(...data)
-    last = data[data.length - 1][searchKey.value]
+    last = data[data.length - 1][searchKey]
   }
 }
 
