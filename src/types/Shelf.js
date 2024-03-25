@@ -1,4 +1,4 @@
-import { toDate } from "@/utils/date-function";
+import { toDate, toTimestamp } from "@/utils/date-function";
 import CatalogController from "@/controllers/CatalogController";
 import StockBook from "./StockBook";
 
@@ -25,6 +25,14 @@ export default class Shelf {
 
   get modifyDate() {
     return toDate(this.modifiedAt);
+  }
+
+  set createDate(value) {
+    this.createdAt = toTimestamp(value);
+  }
+
+  set modifyDate(value) {
+    this.modifiedAt = toTimestamp(value);
   }
 
   async getPayload() {

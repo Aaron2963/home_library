@@ -9,3 +9,7 @@ export function toDate(timestamp, formatString = "yyyy-MM-dd HH:mm") {
   }
   return format(timestamp, formatString);
 }
+
+export function toTimestamp(date) {
+  return Timestamp.fromDate(date);
+}

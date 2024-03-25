@@ -42,6 +42,14 @@ const routes = [
       needAuth: true,
     },
   },
+  {
+    path: '/session',
+    component: () => import('@/views/SessionView.vue'),
+    meta: {
+      title: '掃描結果',
+      needAuth: true,
+    },
+  }
 ];
 
 let title = '我的圖書館';

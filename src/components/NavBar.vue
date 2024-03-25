@@ -18,6 +18,9 @@
             <router-link class="nav-link" to="/books">書目</router-link>
           </li>
           <li class="nav-item">
+            <router-link class="nav-link" to="/session">掃描結果</router-link>
+          </li>
+          <li class="nav-item">
             <router-link class="nav-link" to="/login" @click="logout">登出</router-link>
           </li>
         </ul>
