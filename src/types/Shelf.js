@@ -1,4 +1,4 @@
-import { toDate, toTimestamp } from "@/utils/date-function";
+import { toDate, toTimestamp, toAgo } from "@/utils/date-function";
 import CatalogController from "@/controllers/CatalogController";
 import StockBook from "./StockBook";
 
@@ -37,6 +37,10 @@ export default class Shelf {
 
   get bookCount() {
     return Object.values(this.books).reduce((acc, cur) => acc + cur, 0);
+  }
+
+  get modifyAgo() {
+    return toAgo(this.modifiedAt);
   }
 
   async getPayload() {

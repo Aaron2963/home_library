@@ -9,7 +9,7 @@
         <button type="submit" class="btn btn-primary">轉移</button>
       </div>
     </form>
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modal-create-shelf">
+    <button v-if="allowCreate" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modal-create-shelf">
       轉移到新書櫃
     </button>
     <div class="modal fade" id="modal-create-shelf" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -49,6 +49,10 @@ const props = defineProps({
   items: {
     type: Array,
     required: true
+  },
+  allowCreate: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -68,7 +72,7 @@ async function move() {
     return StockBook.fromBook(b, 1)
   }))
   if (rs) {
-    // await SessionController.clear()
+    await SessionController.clear()
   }
   emit('moved', shelfId.value)
 }

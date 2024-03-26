@@ -35,7 +35,7 @@
           <td>{{ b.isbnString }}</td>
           <td>
             <div class="number">
-              <button class="btn btn-primary btn-sm p-0" @click="changeQty(b.id, -1)">
+              <button class="btn btn-primary btn-sm p-0" @click="changeQty(b.id, -1)" :disabled="b.quantity <= 0">
                 <img :src="iconMinus" alt="minus" />
               </button>
               <span>{{ b.quantity }}</span>
@@ -45,7 +45,7 @@
             </div>
           </td>
           <td>
-            <button class="btn btn-info btn-sm me-2" @click="toCart(b.id)">
+            <button class="btn btn-info btn-sm me-2" @click="toCart(b.id)" :disabled="b.quantity <= 0">
               <img :src="iconAddCart" alt="add-cart">
             </button>
             <button class="btn btn-danger btn-sm" @click="remove(b.id)">
@@ -67,10 +67,13 @@
             <h5 class="text-end">{{ b.quantity }}本</h5>
           </div>
           <div class="card-footer">
+            <button class="btn btn-info btn-sm" @click="toCart(b.id)" :disabled="b.quantity <= 0">
+              <img :src="iconAddCart" alt="add-cart" />
+            </button>
             <button class="btn btn-danger btn-sm" @click="remove(b.id)">
               <img :src="iconClose" alt="remove" />
             </button>
-            <button class="btn btn-primary btn-sm ms-auto" @click="changeQty(b.id, -1)">
+            <button class="btn btn-primary btn-sm ms-auto" @click="changeQty(b.id, -1)" :disabled="b.quantity <= 0">
               <img :src="iconMinus" alt="minus" />
             </button>
             <button class="btn btn-primary btn-sm" @click="changeQty(b.id, 1)">
@@ -165,7 +168,7 @@
             </table>
           </div>
           <div v-if="cart.length > 0" class="modal-footer">
-            <move-book :items="cart" @moved="moved" />
+            <move-book :allow-create="false" :items="cart" @moved="moved" />
           </div>
         </div>
       </div>
