@@ -41,8 +41,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
-import Swal from 'sweetalert2'
-import { useRouter } from 'vue-router'
 import StockBook from '@/types/StockBook'
 import SessionController from '@/controllers/SessionController'
 import DepositController from '@/controllers/DepositController'
@@ -54,8 +52,9 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['moved'])
+
 const shelves = ref([]), shelfId = ref('')
-const router = useRouter()
 let modal;
 
 async function loadShelves() {
@@ -64,10 +63,14 @@ async function loadShelves() {
 
 async function move() {
   if (shelfId.value == '') return
-  const rs = await DepositController.addBooks(shelfId.value, props.items.map(b => StockBook.fromBook(b, 1)))
+  const rs = await DepositController.addBooks(shelfId.value, props.items.map(b => {
+    if (b instanceof StockBook) return b
+    return StockBook.fromBook(b, 1)
+  }))
   if (rs) {
-    await SessionController.clear()
+    // await SessionController.clear()
   }
+  emit('moved', shelfId.value)
 }
 
 async function createShelf(ev) {
@@ -75,14 +78,11 @@ async function createShelf(ev) {
   if (!name) return
   const newShelf = await DepositController.createShelf(name)
   if (!newShelf) return
-  const count = props.items.value.length
   shelves.value.push(newShelf)
   shelfId.value = newShelf.id
   ev.target.reset()
-  await move();
   modal.hide()
-  router.push(`/shelf/${newShelf.id}`)
-  Swal.fire('新增成功', `已新增書櫃並轉移${count}本書`, 'success')
+  await move();
 }
 
 onMounted(() => {
@@ -96,8 +96,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 1.5rem auto;
-  max-width: 500px;
+  max-width: 100%;
+  width: 500px;
 }
 
 .action-bar>*:first-child {

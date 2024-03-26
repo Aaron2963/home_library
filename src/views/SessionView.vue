@@ -23,20 +23,34 @@
         </div>
       </div>
     </div>
-    <move-book :items="items" v-if="items.length > 0" />
+    <div v-if="items.length > 0" class="my-3">
+      <move-book class="mx-auto" :items="items" @moved="moved" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import toast from '@/utils/toast'
 import SessionController from '@/controllers/SessionController'
 import MoveBook from '@/components/MoveBook.vue'
 
 const session = ref({}), items = ref([])
+const router = useRouter()
 
 async function loadSession() {
   session.value = await SessionController.get()
   items.value = await session.value.getBooks()
+}
+
+function moved(shelfId) {
+  console.log('moved', shelfId)
+  toast.fire({
+    icon: 'success',
+    title: '書籍已轉移到新書櫃'
+  })
+  router.push(`/shelf/${shelfId}`)
 }
 
 onMounted(() => {

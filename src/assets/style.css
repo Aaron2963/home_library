@@ -9,7 +9,17 @@ a {
 
 .btn.btn-danger>img,
 .btn.btn-primary>img,
-.btn.btn-success>img {
+.btn.btn-success>img,
+.btn.btn-info>img {
+  filter: brightness(0) invert(1);
+}
+
+.btn.btn-outline-dark>img {
+  filter: brightness(0);
+}
+
+.btn.btn-outline-dark:hover>img,
+.btn.btn-outline-dark:active>img {
   filter: brightness(0) invert(1);
 }
 

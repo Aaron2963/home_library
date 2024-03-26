@@ -45,6 +45,9 @@
             </div>
           </td>
           <td>
+            <button class="btn btn-info btn-sm me-2" @click="toCart(b.id)">
+              <img :src="iconAddCart" alt="add-cart">
+            </button>
             <button class="btn btn-danger btn-sm" @click="remove(b.id)">
               <img :src="iconClose" alt="remove" />
             </button>
@@ -52,7 +55,7 @@
         </tr>
       </tbody>
     </table>
-    <div class="row d-flex d-lg-none">
+    <div class="row d-flex d-lg-none pb-5">
       <div class="col-12" v-for="(b, i) in books" :key="i">
         <div class="card">
           <div class="card-body">
@@ -76,6 +79,11 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="fab">
+      <button class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#modal-cart">
+        <img :src="iconCart" alt="cart" />
+      </button>
     </div>
     <div ref="modalEditShelfEl" class="modal fade" id="modal-edit-shelf" tabindex="-1" data-bs-backdrop="static"
       data-bs-keyboard="false" role="dialog" aria-labelledby="title-edit-shelf" aria-hidden="true">
@@ -122,6 +130,46 @@
         </div>
       </div>
     </div>
+    <div ref="modalCart" class="modal fade" id="modal-cart" tabindex="-1" data-bs-backdrop="static"
+      data-bs-keyboard="false" role="dialog" aria-labelledby="title-cart" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="title-cart">
+              <img :src="iconCart" alt="cart">
+              <span>推車</span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0">
+            <div v-if="cart.length === 0">
+              <h4 class="text-secondary text-center my-5">推車目前是空的</h4>
+            </div>
+            <table class="table table-striped">
+              <tbody>
+                <tr v-for="(b) in cart" :key="b.id">
+                  <th>{{ b.title }}</th>
+                  <td>
+                    <button class="btn btn-outline-dark btn-sm p-0" @click="changeCartQty(b.id, -1)">
+                      <img :src="iconMinus" alt="minus" />
+                    </button>
+                  </td>
+                  <td class="number">{{ b.quantity }}</td>
+                  <td>
+                    <button class="btn btn-outline-dark btn-sm p-0" @click="changeCartQty(b.id, 1)">
+                      <img :src="iconAdd" alt="add" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="cart.length > 0" class="modal-footer">
+            <move-book :items="cart" @moved="moved" />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -131,17 +179,22 @@ import { Modal } from 'bootstrap';
 import { Timestamp } from 'firebase/firestore';
 import DepositController from '@/controllers/DepositController';
 import CatalogController from '@/controllers/CatalogController';
+import MoveBook from '@/components/MoveBook.vue';
 import StockBook from '@/types/StockBook';
 import Swal from 'sweetalert2';
+import toast from '@/utils/toast';
 import BreadCrumb from '@/components/BreadCrumb.vue';
 import SearchCatalog from '@/components/SearchCatalog.vue';
 import iconEdit from '@/assets/edit.svg';
 import iconAdd from '@/assets/add.svg';
 import iconClose from '@/assets/close.svg';
 import iconMinus from '@/assets/remove.svg';
+import iconCart from '@/assets/shopping_cart.svg';
+import iconAddCart from '@/assets/add_shopping_cart.svg';
 
 const shelf = ref({}), books = ref([]), modalEditShelfEl = ref(null);
 const searchResult = ref([]), searchForm = ref(null);
+const cart = ref([])
 let modalEditShelf = null;
 
 const props = defineProps({
@@ -210,6 +263,57 @@ async function changeQty(id, num) {
   await DepositController.changeBookQuantity(shelf.value.id, id, book.quantity)
 }
 
+function toCart(id) {
+  const ori = books.value.find(b => b.id === id)
+  const book = ori?.copy()
+  if (!book) return
+  if (cart.value.find(b => b.id === id)) {
+    changeCartQty(id, 1)
+  } else {
+    book.quantity = 1
+    ori.quantity -= 1
+    cart.value.push(book)
+    toast.fire({
+      icon: 'success',
+      title: '已加入推車'
+    })
+  }
+}
+
+function changeCartQty(id, num) {
+  const bookInCart = cart.value.find(b => b.id === id)
+  const book = books.value.find(b => b.id === id)
+  if (!book) return
+  if (book.quantity - num < 0) {
+    toast.fire({
+      icon: 'error',
+      title: '書櫃中的數量不足'
+    })
+    return
+  }
+  bookInCart.quantity += num
+  book.quantity -= num
+  if (bookInCart.quantity <= 0) {
+    cart.value = cart.value.filter(b => b.id !== id)
+  }
+  toast.fire({
+    icon: 'success',
+    title: '已更新推車'
+  })
+}
+
+async function moved(_) {
+  while (cart.value.length > 0) {
+    const b = cart.value.pop()
+    const {id, quantity} = books.value.find(bk => bk.id === b.id)
+    await DepositController.changeBookQuantity(shelf.value.id, id, quantity)
+  }
+  toast.fire({
+    icon: 'success',
+    title: '書籍已轉移到新書櫃'
+  })
+}
+
 onMounted(async () => {
   shelf.value = await DepositController.getShelf(props.id)
   books.value = await shelf.value.getPayload()
@@ -254,5 +358,60 @@ td .number span {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+}
+
+.fab {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+}
+
+.fab .btn {
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+#modal-cart .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+#modal-cart table {
+  width: 100%;
+}
+
+#modal-cart th {
+  text-align: left;
+}
+
+#modal-cart th,
+#modal-cart td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+#modal-cart td.number {
+  text-align: right;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+#modal-cart td .btn {
+  height: 1rem;
+  width: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#modal-cart td .btn img {
+  height: 0.8rem;
 }
 </style>
