@@ -1,6 +1,3 @@
-import { toDate } from "@/utils/date-function";
-import { Timestamp } from "firebase/firestore";
-
 export default class Book {
   id = '';
   title = '';
@@ -8,7 +5,7 @@ export default class Book {
   isbn10 = '';
   isbn13 = '';
   publisher = '';
-  publishedDate = 0;
+  publishedDate = '';
   note = '';
 
   static fromJson(json) {
@@ -19,7 +16,7 @@ export default class Book {
     book.isbn10 = json.isbn10 ?? '';
     book.isbn13 = json.isbn13 ?? '';
     book.publisher = json.publisher ?? '';
-    book.publishedDate = json.publishedDate ?? 0;
+    book.publishedDate = json.publishedDate ?? '';
     book.note = json.note ?? '';
     return book;
   }
@@ -35,14 +32,6 @@ export default class Book {
       publishedDate: this.publishedDate,
       note: this.note,
     };
-  }
-
-  get publishedDateString() {
-    return toDate(this.publishedDate, 'yyyy-MM-dd');
-  }
-
-  set publishedDateString(value) {
-    this.publishedDate = Timestamp.fromDate(new Date(value));
   }
 
   get isbnString() {

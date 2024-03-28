@@ -58,8 +58,8 @@
               </div>
               <div class="mb-3">
                 <label for="publishedDate" class="form-label">出版日期</label>
-                <input type="date" class="form-control" name="publishedDate" id="publishedDate"
-                  v-model="book.publishedDateString" />
+                <input type="text" class="form-control" name="publishedDate" id="publishedDate"
+                  v-model="book.publishedDate" />
               </div>
               <div class="mb-3">
                 <label for="isbn10" class="form-label">ISBN-10</label>
